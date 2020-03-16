@@ -21,6 +21,9 @@ import org.asteroid.controls 1.0
 import Nemo.Ngf 1.0
 import Nemo.DBus 2.0
 import Nemo.KeepAlive 1.1
+import Nemo.Configuration 1.0
+import Nemo.Time 1.0
+import TimerAlarm 1.0
 
 Application {
     id: app
@@ -28,12 +31,41 @@ Application {
     centerColor: "#E34FB1"
     outerColor: "#83155B"
 
+    ConfigurationValue {
+        id: startDateConf
+        key: "/timer/startDate"
+        defaultValue: -1
+    }
+
+    ConfigurationValue {
+        id: selectedTimeConf
+        key: "/timer/selectedTime"
+        defaultValue: -1
+    }
+
+    ConfigurationValue {
+        id: runningConf
+        key: "/timer/running"
+        defaultValue: false
+    }
+
+    ConfigurationValue {
+        id: alarmIdConf
+        key: "/timer/alarmId"
+        defaultValue: 0
+    }
+
     property var startDate: 0
     property int selectedTime: 0
     property int seconds: 5*60
 
     function zeroPad(n) {
         return (n < 10 ? "0" : "") + n
+    }
+
+    TimerAlarm {
+        id:timerAlarm
+        onSaved: alarmIdConf.value = timerAlarm.getId()
     }
 
     Row {
@@ -98,11 +130,19 @@ Application {
 
         onClicked: {
             if(timer.running)
+            {
                 timer.stop()
+                runningConf.value = false
+                timerAlarm.deleteAlarm()
+            }
             else
             {
                 startDate = new Date
+                startDateConf.value = startDate.toLocaleString()
                 selectedTime = seconds
+                timerAlarm.setAlarm(seconds)
+                selectedTimeConf.value = selectedTime
+                runningConf.value = true
                 timer.start()
             }
         }
@@ -123,6 +163,14 @@ Application {
         bus: DBus.SystemBus
     }
 
+    function updateTime() {
+        var currentDate = new Date
+        seconds = selectedTime - (currentDate.getTime() - startDate.getTime())/1000
+        secondLV.currentIndex = seconds%60
+        minuteLV.currentIndex = (seconds%3600)/60
+        hourLV.currentIndex = seconds/3600
+    }
+
     Timer {
         id: timer
         running: false
@@ -132,20 +180,38 @@ Application {
         onTriggered: {
             if(seconds <= 0)
             {
-                timer.stop()
-                feedback.play()
-                dbus.call("req_display_state_on", undefined)
-                window.raise()
+                runningConf.value = false
+//                timer.stop()
+//                feedback.play()
+//                dbus.call("req_display_state_on", undefined)
+//                window.raise()
             }
             else
             {
-                var currentDate = new Date
-                seconds = selectedTime - (currentDate.getTime() - startDate.getTime())/1000
-                secondLV.currentIndex = seconds%60
-                minuteLV.currentIndex = (seconds%3600)/60
-                hourLV.currentIndex = seconds/3600
+                updateTime()
             }
         }
         onRunningChanged: DisplayBlanking.preventBlanking = running
     }
+    Component.onCompleted: {
+        if (runningConf.value)
+        {
+            if (startDateConf.value !== -1)
+            {
+                startDate = Date.fromLocaleString(startDateConf.value)
+                if (selectedTimeConf.value !== -1)
+                {
+                    selectedTime = selectedTimeConf.value
+                    if (alarmIdConf.value !== 0)
+                    {
+                        timerAlarm.setId(alarmIdConf.value)
+                        updateTime()
+                        timer.start()
+                    }
+                }
+            }
+        }
+    }
+
+
 }

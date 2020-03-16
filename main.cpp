@@ -16,8 +16,12 @@
  */
 
 #include <asteroidapp.h>
+#include <QQmlEngine>
+
+#include "timeralarm.h"
 
 int main(int argc, char *argv[])
 {
+    qmlRegisterType<TimerAlarm>("TimerAlarm", 1, 0, "TimerAlarm");
     return AsteroidApp::main(argc, argv);
 }
