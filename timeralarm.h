@@ -9,6 +9,7 @@ class TimerAlarm : public QObject
 {
     Q_OBJECT
 public:
+
     TimerAlarm(QObject *parent = NULL);
     TimerAlarm(int alarmIdQ, QObject *parent = NULL);
     Q_INVOKABLE void setAlarm(int ticker);

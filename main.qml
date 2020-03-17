@@ -165,10 +165,19 @@ Application {
 
     function updateTime() {
         var currentDate = new Date
-        seconds = selectedTime - (currentDate.getTime() - startDate.getTime())/1000
+        seconds = selectedTime - ((currentDate.getTime() - startDate.getTime())/1000)
+        if (seconds < 0){
+            seconds = 0
+        }
         secondLV.currentIndex = seconds%60
         minuteLV.currentIndex = (seconds%3600)/60
         hourLV.currentIndex = seconds/3600
+    }
+
+    function resetTime() {
+        secondLV.currentIndex = 0
+        minuteLV.currentIndex = 5
+        hourLV.currentIndex = 0
     }
 
     Timer {
@@ -178,16 +187,10 @@ Application {
         interval: 500
         triggeredOnStart: true
         onTriggered: {
-            if(seconds <= 0)
-            {
+            if(seconds <= 0){
                 runningConf.value = false
-//                timer.stop()
-//                feedback.play()
-//                dbus.call("req_display_state_on", undefined)
-//                window.raise()
-            }
-            else
-            {
+                Qt.callLater(Qt.quit)
+            } else {
                 updateTime()
             }
         }
@@ -206,7 +209,13 @@ Application {
                     {
                         timerAlarm.setId(alarmIdConf.value)
                         updateTime()
-                        timer.start()
+                        if (seconds <= 0){
+                            resetTime()
+                        }else{
+                            timer.start()
+                        }
+
+
                     }
                 }
             }

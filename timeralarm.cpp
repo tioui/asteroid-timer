@@ -28,9 +28,12 @@ void TimerAlarm::setAlarm(int aTicker)
     QDateTime lTriggerDateTime;
     lEvent.setSingleShotFlag();
     lEvent.setReminderFlag();
+    lEvent.hideSnoozeButton1();
     lNow = QDateTime::currentDateTimeUtc();
     lTriggerDateTime = lNow.addSecs(aTicker);
     lEvent.setTicker(lTriggerDateTime.toTime_t());
+
+    lEvent.setAttribute(QLatin1String("triggerTime"), QString::number(lTriggerDateTime.toTime_t()));
     lEvent.setAttribute(QLatin1String("APPLICATION"), QLatin1String("Timer"));
     lEvent.setAttribute(QLatin1String("TITLE"), QLatin1String("Timer"));
     lButton = lEvent.addButton();
