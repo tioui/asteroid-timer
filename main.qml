@@ -211,6 +211,7 @@ Application {
                         updateTime()
                         if (seconds <= 0){
                             resetTime()
+                            timerAlarm.deleteAlarm()
                         }else{
                             timer.start()
                         }

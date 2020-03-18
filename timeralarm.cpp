@@ -27,6 +27,7 @@ void TimerAlarm::setAlarm(int aTicker)
     QDateTime lTriggerDateTime;
     int lTriggerTime;
     lEvent.setReminderFlag();
+    lEvent.setKeepAliveFlag();
     lEvent.setAttribute(QLatin1String("APPLICATION"), QLatin1String("Timer"));
     lEvent.setAttribute(QLatin1String("TITLE"), QLatin1String("Timer"));
     lNow = QDateTime::currentDateTimeUtc();
