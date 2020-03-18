@@ -23,21 +23,19 @@ void TimerAlarm::setAlarm(int aTicker)
 {
     Maemo::Timed::Event lEvent;
     QDBusPendingCallWatcher *lWatcher;
-    Maemo::Timed::Event::Button lButton;
     QDateTime lNow;
     QDateTime lTriggerDateTime;
-    lEvent.setSingleShotFlag();
+    int lTriggerTime;
     lEvent.setReminderFlag();
-    lEvent.hideSnoozeButton1();
-    lNow = QDateTime::currentDateTimeUtc();
-    lTriggerDateTime = lNow.addSecs(aTicker);
-    lEvent.setTicker(lTriggerDateTime.toTime_t());
-
-    lEvent.setAttribute(QLatin1String("triggerTime"), QString::number(lTriggerDateTime.toTime_t()));
     lEvent.setAttribute(QLatin1String("APPLICATION"), QLatin1String("Timer"));
     lEvent.setAttribute(QLatin1String("TITLE"), QLatin1String("Timer"));
-    lButton = lEvent.addButton();
-    lButton.setAttribute(QLatin1String("TITLE"), QLatin1String("Timer"));
+    lNow = QDateTime::currentDateTimeUtc();
+    lTriggerDateTime = lNow.addSecs(aTicker);
+	lTriggerTime = lTriggerDateTime.toTime_t();
+    lEvent.setTicker(lTriggerTime);
+	lEvent.setAlarmFlag();
+	lEvent.setAttribute(QLatin1String("triggerTime"), QString::number(lTriggerTime));
+	lEvent.setAttribute(QLatin1String("type"), QLatin1String("countdown"));
     if (m_id)
         lWatcher = new QDBusPendingCallWatcher(AlarmInterface::instance()->replace_event_async(lEvent, m_id), this);
     else
